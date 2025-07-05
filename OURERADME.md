@@ -6,6 +6,8 @@ This repository contains the code and pipeline developed as part of a final-year
 
 ## 📊 Full Pipeline Overview
 
+The data consists of `.wav` audio files of different speakers—both native American English (L1) and various non-native (L2) accents—reading the same English sentences. Accompanying these are phoneme transcriptions stored in Excel files, which annotate each sentence’s phonetic content. This parallel data allows direct comparison of phonetic variation across accents.
+
 The pipeline aligns phonemes with speech using MFA, extracts HuBERT embeddings, calculates distance projections using DTW, and evaluates the correlation with phonological similarity.
 
 Each component of the process is modular and documented below.
