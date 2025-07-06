@@ -30,7 +30,7 @@ def extract_id(filename):
     match = re.search(r'(\d{2})[-_](\d{2})', filename)
     return match.group(0) if match else None
 
-def process_pair(l1_wav, l2_wav, l2_folder, path_to_trajectory_analysis, path_to_correlations_csv):
+def process_pair(l1_wav, l2_wav, l2_folder, path_to_projection_analysis, path_to_correlations_csv):
     log(f"\nProcessing pair:\n      - L1 Speaker: {l1_wav}\n      - L2 Speaker:   {l2_wav}")
     success_count_by_folder[l2_folder] += 1
 
@@ -44,9 +44,9 @@ def process_pair(l1_wav, l2_wav, l2_folder, path_to_trajectory_analysis, path_to
     log_filename = os.path.splitext(wav_base)[0] + ".log"
     log_path = os.path.join(pair_log_dir, log_filename)
 
-    # Run the trajectory script, capture its output
+    # Run the projection script, capture its output
     proc = subprocess.Popen(
-        ["python", path_to_trajectory_analysis, l1_wav, l2_wav, path_to_correlations_csv],
+        ["python", path_to_projection_analysis, l1_wav, l2_wav, path_to_correlations_csv],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True  # get strings not bytes
@@ -69,7 +69,7 @@ def process_pair(l1_wav, l2_wav, l2_folder, path_to_trajectory_analysis, path_to
         dest_folder = os.path.join(processed_dir, speaker_folder)
         os.makedirs(dest_folder, exist_ok=True)
 
-        # The trajectory script creates a CSV next to the WAV by replacing .wav with .csv
+        # The projection script creates a CSV next to the WAV by replacing .wav with .csv
         pair_csv = os.path.splitext(l2_wav)[0] + "_results.csv"
         csv_basename = os.path.basename(pair_csv)
         dest_csv = os.path.join(dest_folder, csv_basename)
@@ -88,8 +88,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run full phonetic analysis pipeline")
     parser.add_argument('--base_data_path', '-b', required=True,
                         help="Root path of Phase_1_recordings_clean")
-    parser.add_argument('--trajectory_script', '-t', required=True,
-                        help="Path to trajectory_analysis.py")
+    parser.add_argument('--projection_script', '-p', required=True,
+                        help="Path to projection_analysis.py")
     parser.add_argument('--output_csv', '-o', required=True,
                         help="Path to summary correlations CSV file")
     parser.add_argument('--log_dir', '-l', default='./logs',
@@ -97,7 +97,7 @@ def main():
     parser.add_argument('--clean_logs', '-c',
                         action='store_true',
                         help='If set, delete existing logs before running')
-    parser.add_argument('--processed_dir', '-p',
+    parser.add_argument('--processed_dir', '-cp',
                         help='If set, copy output CSV (and L2 results) into this folder')
 
     args = parser.parse_args()
@@ -128,10 +128,10 @@ def main():
     
     # === Setup variables ===
     base_data_path = args.base_data_path
-    path_to_trajectory_analysis = args.trajectory_script
+    path_to_projection_analysis = args.projection_script
     path_to_correlations_csv = args.output_csv
     log(f"\n📂 Base data path: {base_data_path}"
-        f"\n📂 Trajectory analysis script: {path_to_trajectory_analysis}"
+        f"\n📂 projection analysis script: {path_to_projection_analysis}"
         f"\n📂 Output correlations CSV: {path_to_correlations_csv}"
         )
     l1_dirs = ["MidlandFemale", "MidlandMale"]
@@ -224,7 +224,7 @@ def main():
                             file_level_textgrid_errors[l2_dir] += 1
                             continue
 
-                        process_pair(l1_file_path, full_l2_path, l2_dir, path_to_trajectory_analysis, path_to_correlations_csv)
+                        process_pair(l1_file_path, full_l2_path, l2_dir, path_to_projection_analysis, path_to_correlations_csv)
 
     # === Summary logs ===
     log("\n📊 Summary of successful comparisons by folder:")

@@ -1,102 +1,247 @@
-# This is a template
-# TODO: Need to write our README file
+# Detecting Phonetic Variations in Accented Speech Using HuBERT
 
+This repository contains the code and pipeline developed as part of a final-year research project at the Technion. The project investigates whether HuBERT's internal representations can detect and quantify phonetic variation between native (L1) and non-native (L2) speakers more effectively than phoneme transcriptions.
 
-# A perceptual similarity space for speech based on self-supervised speech representations
-This repository contains the code base for reproducing the paper [A perceptual similarity space for speech based on self-supervised speech representations](https://doi.org/10.1121/10.0026358) by Bronya R. Chernyak, Ann R. Bradlow, Joseph Keshet, and Matthew Goldrick.
+---
 
-## Reproducing the tables (i.e., the analysis):
-To reproduce the tables, the analysis scripts are under ["analysis_scripts"](https://github.com/bronichern/percept_sim/tree/main/analysis_scripts/). Note each subdirectory has it's corresponding readme file.
-The distance files are located under "distance_files".
+## 📊 Full Pipeline Overview
+
+The data consists of `.wav` audio files of different speakers—both native American English (L1) and various non-native (L2) accents—reading the same English sentences. Accompanying these are phoneme transcriptions stored in Excel files, which annotate each sentence’s phonetic content. This parallel data allows direct comparison of phonetic variation across accents.
+
+The pipeline aligns phonemes with speech using MFA, extracts HuBERT embeddings, calculates distance projections using DTW, and evaluates the correlation with phonological similarity.
+
+Each component of the process is modular and documented below.
+
+---
 
 ## 1. Installation
-- Follow the installation instructions of fairseq: https://github.com/facebookresearch/fairseq/tree/main#requirements-and-installation
-- Go back to the percept_sim repo
-- Install the requirements with `pip install -r requirements.txt` 
-## 2. Using the trajectory demo
-To render the notebook plots, use nbviewer. For instance, for the Korean dataset notebook, use:  
-https://nbviewer.org/github/bronichern/percept_sim/blob/main/kr_trajectories.ipynb
-  
-To change the plots, you need hubert's features.  To change the korean notebook, you can download the files [Here](https://drive.google.com/drive/folders/1ZkDLYDqN9BWv_5frwNLi_lRvexw0f0a0?usp=share_link)
-To generate other features, see the instructions in *section 3*.  
-  
-Instead of the notebook you can also run a script that will open the plots directly in a dedicated view:  
-- Assuming the files above were downloaded to: `/home/some_path` (change that with the actual location where you downloaded the files). 
-- Now `/home/some_path` has 2 files: `kr_en_full_0_1.npy` and `kr_en_full_0_1.len`  
-- In this repo, there is a yaml config file: `demo/kr_trajectories.yaml`.   Edit the value of `feat_path` in the yaml to have the path `/home/some_path`.  Then, dit the value of tsv_path, to the tsvs directory in this repor.  
-- Run the following - change `path_to_config` to point to the location of the yaml file above:  
-```
-python demo/kr_trajectories.py --path_to_config
+
+- Clone the repository:
+```bash
+git clone https://github.com/Xitaye/DetectPhoneticVariations.git
+cd DetectPhoneticVariations
 ```
 
-## 3. Data preparation
-### **The scripts in the repository rely on the dataset file structure. You can see it [here](https://github.com/bronichern/percept_sim/blob/main/file_structure.txt) or refer to [SpeechBox](https://speechbox.linguistics.northwestern.edu/) metadata information.**    
-
-The following script can resample the data to 16khz, split it by sentence (if textgrids are available) and create a tsv file in tsvs/.
-```
-python data_preprocess/prepare_data.py --path data_path --resample_waves --split_by_sentence --tsv_name name_of_tsv_file
-```
-Remove ```--resample_waves``` if you don't want to resample the files and remove ```--split_by_sentence``` if the files are relatively short(~1 second up to ~18 seconds) and there is no need for splitting by sentence/word.  
-```name_of_tsv_file``` - should be without '.tsv' at the end.
-```data_path``` - directory with wave files.  
-- If splitting is relevant, textgrids should be within the same directory and have the same name as the corresponding wave file.
-
-### Korean dataset
-```
-python data_preprocess/prepare_data.py --path kr_path --resample_waves --tsv_name kr
+- Create a virtual environment and install dependencies:
+```bash
+python -m venv env
+source env/bin/activate  # Windows: .\env\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### ALLSTAR dataset
-```
-python data_preprocess/prepare_data.py --path allstar_path --resample_waves --split_by_sentence --prepare_allstar
-```
-Note that the script will create a tsv for each reading task in the dataset.
-
-## 4. Create a directory for Hubert's feature file:
-Throughout the next sections, there is a distinction between the ALLSTAR dataset, which has different reading tasks, and the Korean dataset, which doesn't.  
-### Korean dataset
-Within the directory you choose to store Hubert's feature file, create a directory named kr_layer```layer-number``` (i.e kr_layer1)  
-```layer-number``` - Hubert layer we want to have as a feature extractor  
-### ALLSTAR Mandarin/Spanish dataset
-Within the directory you choose to store Hubert's feature file, create a directory named  ```dataset_name```\_```reading_task```\_layer```layer-number``` (i.e cmn_lpp_layer1)  
-```dataset_name``` - 'cmn' or 'spn' for Mandarin or Spanish respectively.  
-```reading_task``` - "HT1"/"HT2"/"LPP"/"DHR".  
-```layer-number``` - Hubert layer we want to have as a feature extractor.  
-
-## Running Perceptual Similarity distance
-```
-python run.py --reading_task task_name --data data_subset_name --layer hubert_layer --portion sentences_portion --verbose --feat_path hubert_feature_path --tsv_name tsv_name --project --output_path output_csv_dir
-```
- ```--data```: First, to know which dataset we process, ```--data``` argument is required. ```--data cmn``` or ```--data spn``` are for the ALLSTAR dataset, with L1 English speakers and L2 english speakers with L1 Mandarin or L1 Spanish, respectively; ```--data kr``` specifies to use the Korean dataset with L1 English speakers and L2 English speakers with Korean L1. The different datasets have different processing when creating their DataFrame.  
-```--portion```:  This parameter is only relevant for the ALLSTAR dataset (i.e., with arguments ```--data cmn``` or ```--data spn```). For the ALLSTAR dataset, since there was a lot of data to process, the script processes subsets of the data. Meaning since we divided the waves by sentences, ```--portion``` accepts integers between 1-9 that specifies to process sentences with an id that begins with ```sentences_portion```. 
-- If you wish to run using all the data instead of specifying ```--portion```, use ```--run_all_data```.
-
-```--reading_task``` is relevant for the ALLSTAR dataset where task_name can be one of "HT1","HT2","LPP","DHR".  
-```--project``` argument is specified to project using TSNE. Remove this argument if you want to measure distance using all of HuBERT's features. If you want to use 2 dimensions for TSNE instead of 3 (default), specify ```--tsne_dim 2```.  If you want to use UMAP or K-PCA instead, add the flag ```--umap``` or ```--pca``` respectively.
-At the end of processing, a CSV file will be created in the directory ```output_csv_dir``` specified in the argument ```--output_path output_csv_dir```.  
-
-The script assumes that the required Hubert's feature file is saved in - see the next section for instructions on how to create Hubert feature file: ```hubert_feature_path```/```data_subset_name```\_```task_name```\_```hubert_layer```/  
-
-For instance, for running ALLSTAR-HT1 dataset with L1 English speakers and L2 Mandarin speakers, with a feature file for layer 12 saved in hubert_feature_path/cmn_ht1_layer12, and with a tsv file created in tsvs/allstar_ht1.tsv run the following command:  
-```
-python run.py --reading_task "HT1" --data "cmn" --layer 12 --portion 1 --verbose --feat_path hubert_feature_path/ --tsv_name allstar_ht1.tsv --project --output_path output_csv_dir
+> If `requirements.txt` is not present, manually install:
+```bash
+pip install torch torchaudio numpy scipy pandas plotly librosa scikit-learn tgt
 ```
 
-For running the dataset with L1 English speakers and L2 Korean speakers, with a feature file for layer 12 saved in hubert_feature_path/kr_ht1_layer12, and with a tsv file created in tsvs/kr.tsv run the following command:  
-```
-python run.py --data "kr" --layer 12 --portion 1 --verbose --feat_path hubert_feature_path/ --tsv_name kr.tsv --project --output_path output_csv_dir
+---
+
+## 2. Step-by-Step Usage Instructions
+
+### Silence Removal (optional but recommended)
+
+Use SoX to trim silences and normalize WAV files.
+
+```bash
+python Scripts/Silence_Remover.py
 ```
 
-## Generating feature file
-The following section uses fairseq's repo, which was installed inside this repo when you run the installation in *section 1*.   
-Download Hubert base model - [Here](https://dl.fbaipublicfiles.com/hubert/hubert_base_ls960.pt).  
-Run the following to create the feature file:  
-```
-cd fairseq
-python examples/hubert/simple_kmeans/dump_hubert_feature.py tsvs tsv_name path_of_hubert_model layer_number 1 0 output_path_for_features
-```
-```tsv``` - Path to the directory where the tsv files are located  
-```layer_number``` - Hubert layer we want to have as a feature extractor  
-```tsv_name``` - the tsv file created in *section 3* (should be located in the directory specified instead of the tsv argument)  
- ```output_path_for_features``` is the path for saving the feature file. The one created in *section 4* (i.e. cmn_ht1_layer12)
+- **Input**: raw `.wav` files in speaker folders
+- **Output**: cleaned `.wav` files in a parallel folder structure
 
+---
+
+### Transcription Conversion
+
+Convert IPA transcriptions (from Excel) into MFA-compatible `.txt` files.
+
+```bash
+python Scripts/Transcriptions_script.py
+```
+
+- **Input**: Excel CSV + IPA-to-feature mapping (`ipa2spe.csv`)
+- **Output**: `.txt` phoneme files per sentence
+
+---
+
+### Forced Alignment using MFA
+
+Align WAV + TXT pairs with Montreal Forced Aligner to generate phoneme-aligned `.TextGrid` files.
+
+```bash
+python Scripts/MFA_Alignment_script.py
+```
+
+- Ensure you have a working MFA installation.
+- Input and output formats must match MFA guidelines.
+
+---
+
+### Sanity Check for MFA Outputs
+
+Identify any phoneme alignment issues (e.g., `spn`).
+
+```bash
+python Scripts/Check_for_spn_script.py
+```
+
+- **Input**: `.TextGrid` files
+- **Output**: Printed report of problematic phonemes
+
+---
+
+### Run Full Trajectory Analysis Pipeline
+
+This script extracts HuBERT features, calculates DTW, projects distances, aligns phonemes, and correlates phonological similarity.
+
+```bash
+python Scripts/Trajectory_analysis_for_all_scripts.py path/to/L1.wav path/to/L2.wav output_results.csv
+```
+
+**Arguments**:
+- `path/to/L1.wav`: cleaned native speaker audio
+- `path/to/L2.wav`: cleaned non-native speaker audio
+- `output_results.csv`: target CSV to store summary correlations
+
+**What It Does**:
+- Loads WAV files, aligns with corresponding `.TextGrid`
+- Extracts HuBERT embeddings (layer 12)
+- Computes DTW warping path
+- Projects distance signature per speaker
+- Aligns with phonemes via `TextGrid` + `ipa2spe.csv`
+- Calculates cosine similarity between phoneme vectors
+- Outputs Pearson/Spearman correlations and saves results
+
+> Set flags inside the script to enable/disable plots and outputs.
+
+---
+
+## 3. Output Files
+
+- `S2_results.csv`: detailed phoneme-by-phoneme similarity with projected cost
+- `means.csv`: summary of Pearson/Spearman correlations
+- Optional: `.html` or interactive 3D TSNE plots (if enabled)
+
+---
+
+## 4. Feature Vectors and Mapping
+
+HuBERT embeddings are aligned against IPA-based phonological vectors from `ipa2spe.csv`. You can customize this file if using another phoneme set.
+
+---
+
+## 5. Project Structure
+
+```
+Scripts/
+├── Silence_Remover.py               # Trims silence using SoX
+├── Transcriptions_script.py        # Converts IPA to MFA transcription format
+├── MFA_Alignment_script.py         # Batch alignment with MFA
+├── Check_for_spn_script.py         # Finds unaligned phonemes (spn)
+├── Trajectory_analysis_for_all_scripts.py   # Main pipeline: features, DTW, correlation
+├── Analyze_correlations.py         # (optional) aggregates and visualizes correlation summaries
+```
+
+---
+
+## 6. Reproducing the Results
+
+The full methodology and interpretation are described in `FinalReportV2.docx`. To replicate a typical experiment:
+
+```bash
+python Scripts/Trajectory_analysis_for_all_scripts.py     data/L1/E1M-HINT-06-04.wav     data/L2/S2M-HINT-06-04.wav     results/means.csv
+```
+
+---
+
+## 7. Plotting and Visualization Guide
+
+The project includes several plot types to visualize phonetic variation and HuBERT's internal representations.
+
+### How to Enable Plots
+
+In `Trajectory_analysis_for_all_scripts.py`, activate visualizations by setting the following flags:
+
+```python
+run_projection = True            # Enables distance signature projections
+plot_results = True              # Enables cosine vs. cost plots
+plot_graph = True                # Enables 3D t-SNE visualization
+run_peak_analyze = True          # Enables peak mismatch analysis
+run_our_WP = True                # Visualizes DTW cost matrix and warping path
+```
+
+---
+
+### 📈 Plot Types and What They Show
+
+#### 1. DTW Cost Matrix with Warping Path
+- Displays the accumulated DTW cost between HuBERT features of L1 and L2 speakers.
+- Overlays the optimal alignment path.
+- Useful for understanding alignment quality and trajectory structure.
+
+#### 2. Projected Distance Signatures (Cost Projection per Frame)
+
+Once the DTW warping path is calculated between the two speaker sequences, the accumulated cost is decomposed and projected back onto each speaker’s timeline to form a “distance signature.”
+
+- Enabled by: `run_projection = True`
+
+#### 3. Cosine Similarity vs. Distance Signature
+- Aligns phoneme identity with DTW-derived distances.
+- Compares acoustic distance with phonological similarity (cosine between phoneme vectors).
+- Useful for verifying if HuBERT captures linguistically meaningful differences.
+
+- Enabled by: `plot_results = True`
+
+#### 4. Peak Phoneme Analysis
+- Detects sharp spikes in the distance signature.
+- Maps peaks to phonemes and compares L1–L2 pronunciation.
+- Classifies mismatches and saves a detailed CSV report.
+
+- Enabled by: `run_peak_analyze = True`
+
+#### 5. 3D Trajectory Plot (TSNE)
+- Visualizes HuBERT features of both speakers using t-SNE dimensionality reduction.
+- Displays time-embedded speech trajectories in 3D.
+- Helps explore structural alignment between speaker sequences.
+
+- Enabled by: `plot_graph = True` and `apply_TSNE = True`
+
+---
+
+### 💡 Exporting Plots
+
+All visualizations are created using Plotly. To export:
+```python
+fig.write_html("filename.html")           # Interactive HTML plot
+# or
+plotly.io.write_image("filename.png")     # Static image (requires kaleido)
+```
+### 💡 Tip
+
+Most plots are generated with `plotly`, which opens them interactively in your browser. To export them:
+```python
+fig.write_html("output.html")
+```
+Or save static versions using `plotly.io.write_image()`.
+## 8. Credits
+
+This project is based on concepts from:
+- [HuBERT: Hsu et al., 2021](https://arxiv.org/abs/2106.07447)
+- [Chernyak et al., 2024](https://doi.org/10.1121/10.0026358)
+
+It was completed as part of a final-year research seminar at the Technion.
+
+---
+
+## 👩‍🔬 Authors
+
+- Reut Vitzner  
+- Itay Efrat  
+- Supervisor: Prof. Joseph Keshet  
+- Technion, Winter 2025  
+
+---
+
+## License
+
+For academic and non-commercial use only.
