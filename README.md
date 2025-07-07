@@ -27,8 +27,8 @@ Quantify how far an L2 (accented‑English) pronunciation drifts from an L1 (nat
 
 ```mermaid
 flowchart LR
-    A[Step 1 • Remove silence<br>(SoX)] --> B[Step 2 • Run MFA<br>(wav + txt → TextGrid)]
-    B --> C[Step 3 • Trajectory analysis<br>(pair‑wise distance + metrics)]
+    A[Step 1: Remove silence (SoX)] --> B[Step 2: Run MFA (wav + txt → TextGrid)]
+    B --> C[Step 3: Trajectory analysis (pair‑wise distance + metrics)]
 ```
 
 ---
