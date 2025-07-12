@@ -84,7 +84,7 @@ https://github.com/facebookresearch/fairseq/tree/main#requirements-and-installat
     Align WAV+TXT pairs with Montreal Forced Aligner to generate phoneme-aligned `.TextGrid` files.
 
     ```bash
-    python scripts/tools/MFA_alignment.py --base_data_path clean_data_root --dictionary ipa_phone_mapping --acoustic_model english_mfa
+    python scripts/tools/mfa_alignment.py --base_data_path clean_data_root --dictionary ipa_phone_mapping --acoustic_model english_mfa
     ```
 
     - **Input**: 
@@ -188,7 +188,7 @@ scripts/
 ├── tools/
 │   ├── silence_remover.py         # Trims silence using SoX
 │   ├── transcriptions_script.py   # Converts phonetic CSV into MFA‐compatible .txt files
-│   ├── MFA_alignment.py           # Batch alignment with MFA to produce .TextGrid files
+│   ├── mfa_alignment.py           # Batch alignment with MFA to produce .TextGrid files
 │   └── check_for_spn.py           # Scans TextGrids for “spn” intervals and extracts the words
 │
 ├── workflows/
