@@ -1,12 +1,6 @@
-# Detect Phonetic Variations in Accented Speech with HuBERT  
-*A Technion B.Sc. cap‑stone project*
+# Detecting Phonetic Variations in Accented Speech Using HuBERT
 
-Quantify how far an L2 (accented‑English) pronunciation drifts from an L1 (native‑English) reference by chaining  
-
-* **SoX** – silence trimming & loudness normalisation  
-* **Montreal Forced Aligner (MFA)** – word/phone alignment  
-* **HuBERT** embeddings + Dynamic‑Time‑Warping  
-* A cost‑projection + correlation routine we call a **Distance Signature**
+This repository contains the code and pipeline developed as part of a final-year research project at the Technion. The project investigates whether HuBERT's internal representations can detect and quantify phonetic variation between native (L1) and non-native (L2) speakers more effectively than phoneme transcriptions.
 
 ---
 
