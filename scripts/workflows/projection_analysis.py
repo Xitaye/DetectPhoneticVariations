@@ -428,38 +428,66 @@ if plot_projections:
 plot_results = False
 if plot_results:
     fig = go.Figure()
-    
+
+    # 1. L1 projected costs
     fig.add_trace(go.Scatter(
         x=results_df['L1 Timestep'],
         y=results_df['Distance Projected on L1'],
         mode='lines+markers',
         name='Projected Cost on L1',
-        line=dict(color='blue', width=2),
-        marker=dict(size=5),
+        line=dict(color='royalblue', width=2),
+        marker=dict(size=4),
         text=results_df['L1 Phoneme'],
-        hovertemplate='Time: %{x}<br>Cost: %{y}<br>L1 Phoneme: %{text}<br>Match: %{customdata}<extra></extra>',
-        customdata=results_df['True/False']
+        customdata=results_df['Phonemes Cosine Similarity'],
+        hovertemplate=(
+            'Time = %{x:.2f}s<br>'
+            'Similarity = %{customdata:.4f}<br>'
+            'Phoneme = %{text}<extra></extra>'
+        )
     ))
 
-
+    # 2. L2 projected costs
     fig.add_trace(go.Scatter(
         x=results_df['L2 Matching Timestep'],
         y=results_df['Distance Projected on L2'],
         mode='lines+markers',
         name='Projected Cost on L2',
-        line=dict(color='red', width=2),
-        marker=dict(size=5),
+        line=dict(color='firebrick', width=2),
+        marker=dict(size=4),
         text=results_df['L2 Phoneme'],
-        hovertemplate='Time: %{x}<br>Cost: %{y}<br>L2 Phoneme: %{text}<br>Match: %{customdata}<extra></extra>',
-        customdata=results_df['True/False']
+        customdata=results_df['Phonemes Cosine Similarity'],
+        hovertemplate=(
+            'Time = %{x:.2f}s<br>'
+            'Similarity = %{customdata:.4f}<br>'
+            'Phoneme = %{text}<extra></extra>'
+        )
     ))
 
+    # 3. Add DTW relationship links 
+    max_links = 500
+    step = max(1, len(results_df) // max_links)
+
+    for i in range(0, len(results_df), step):
+        fig.add_trace(go.Scatter(
+            x=[results_df.iloc[i]['L1 Timestep'],
+               results_df.iloc[i]['L2 Matching Timestep']],
+            y=[results_df.iloc[i]['Distance Projected on L1'],
+               results_df.iloc[i]['Distance Projected on L2']],
+            mode='lines',
+            line=dict(color='rgba(0,0,0,0.25)', width=1),
+            hoverinfo='skip',
+            showlegend=False
+        ))
+
+    # 4. Layout tweaks
     fig.update_layout(
-        title='Projected Costs on L1 and L2',
-        xaxis_title='Time (s)',
+        title='Projected DTW Costs on L1 and L2\nwith Alignment Links',
+        xaxis_title='Time (seconds)',
         yaxis_title='Projected Cost',
-        legend_title='Legend',
-        template='plotly_white'
+        legend_title='Trace',
+        template='plotly_white',
+        hovermode='closest'
     )
 
     fig.show()
+    
