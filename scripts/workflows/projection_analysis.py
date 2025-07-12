@@ -234,7 +234,7 @@ def create_results_df(l1_intervals, l2_intervals, warping_path, projected_costs_
 
     return results_df
 
-def create_phonological_feature_vectors(path_to_phoneme_dict="data/raw/ipa_phone_mapping.dict", path_to_mapping_csv="data/raw/ipa2spe.csv"):
+def create_phonological_feature_vectors(path_to_phoneme_dict="data/config/ipa_phone_mapping.dict", path_to_mapping_csv="data/config/ipa2spe.csv"):
     """
     Create a DataFrame mapping phonemes to their phonological feature vectors.
     path_to_phoneme_dict: path to the phoneme dictionary file
