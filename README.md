@@ -240,7 +240,7 @@ In `scripts/workflows/projection_analysis.py`, activate visualizations by settin
 ```python
 plot_DTW_cost_matrix = True     # Show heatmap of accumulated DTW cost + warping path
 plot_projections     = True     # Line plots of distance signature projection per frame for each speaker
-plot_results         = True     # Overlay of projected cost vs. phoneme cosine similarity
+plot_results         = True     # Overlay of L1/L2 projected costs with DTW alignment links; hover shows phoneme & cosine similarity
 ```
 
 ---
@@ -264,9 +264,9 @@ plot_results         = True     # Overlay of projected cost vs. phoneme cosine s
 #### 3. Cosine Similarity vs. Distance Signature
 - **Flag:** plot_results
 
-- **Shows:** Overlaid line+marker plot of projected cost and smoothed phoneme-level cosine similarity against time, with hover labels for phonemes.
+- **Shows:** Overlaid line-and-marker plots of projected costs for L1 and L2 connected by semi-transparent DTW alignment links, with hover labels displaying phoneme identities and their cosine-similarity scores.
 
-- **Use:** Verify how acoustic distance correlates with linguistic similarity.
+- **Use:** It lets you visualize how acoustic distance trajectories align across speakers and examine the relationship between projected cost and phonemic similarity.
 
 ### Tip
 
