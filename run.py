@@ -22,13 +22,23 @@ log_file = None
 processed_dir = None # (if set, copy output CSV and L2 results into this folder)
 
 # === Utility function ===
-def log(msg):
+def log(msg, level="info"):
     print(msg)
-    logging.info(msg)
+    if level == "info":
+        logging.info(msg)
+    elif level == "warning":
+        logging.warning(msg)
+    elif level == "error":
+        logging.error(msg)
+    else:
+        logging.info(msg)
 
 def extract_id(filename):
+    filename = re.sub(r'([A-Za-z0-9]+)_(\d{2})_(\d{2})', r'\1-\2-\3', filename)
     match = re.search(r'(\d{2})[-_](\d{2})', filename)
-    return match.group(0) if match else None
+    if match:
+        return f"{match.group(1)}-{match.group(2)}"
+    return None
 
 def process_pair(l1_wav, l2_wav, l2_folder, path_to_projection_analysis, path_to_correlations_csv):
     log(f"\nProcessing pair:\n      - L1 Speaker: {l1_wav}\n      - L2 Speaker:   {l2_wav}")
@@ -107,6 +117,7 @@ def main():
 
     # === Setup of clean logs ===
     log_dir = args.log_dir
+    os.makedirs(log_dir, exist_ok=True)
 
     log_file = os.path.join(log_dir, "full_process.log")
     with open(log_file, "w"): pass  # clear old log
@@ -123,7 +134,6 @@ def main():
             if os.path.isdir(path):
                 shutil.rmtree(path)
 
-    os.makedirs(log_dir, exist_ok=True)
 
     
     # === Setup variables ===
